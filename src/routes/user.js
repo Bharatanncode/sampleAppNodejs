@@ -49,6 +49,6 @@ try {
     message: 'Something went wrong, please try again later',
   });
 }
-})
+});
 
 module.exports = router;
