@@ -17,6 +17,6 @@ All notable changes to this project will be documented in this file. This projec
 ## [1.0.0] - 2024-01-31
 
 ### Added
-- Initial release with CRUD operations: Create, Read.
+- Initial release with CRUD operations: Create, Read ,Update, Delete.
 
 

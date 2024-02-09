@@ -1,37 +1,21 @@
-const winston = require("winston");
-const appRoot = require('app-root-path');
+const winston = require('winston');
+const { combine, timestamp, printf } = winston.format;
 
-
-let options = {
-  file: {
-    level: 'info',
-    filename: `${appRoot}/logs/app.log`,
-    handleExceptions: true,
-    json: true,
-    maxsize: 5242880, // 5MB
-    maxFiles: 5,
-    colorize: false,
-  },
-  console: {
-    level: 'debug',
-    handleExceptions: true,
-    json: false,
-    colorize: true,
-  },
-};
 const logger = winston.createLogger({
   level: 'info',
-  format: winston.format.json(),
-  defaultMeta: { service: 'user-service' },
+  format: combine(
+    timestamp(),
+    printf(({ level, message, timestamp }) => {
+      return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
+    })
+  ),
   transports: [
-    //
-    // - Write all logs with level `error` and below to `error.log`
-    // - Write all logs with level `info` and below to `combined.log`
-    //
-    new winston.transports.File(options.file ),
-    // new winston.transports.Console(options.console),
+    new winston.transports.File({
+      filename: `logs/${new Date().toISOString().slice(0, 10)}.log`,
+      maxsize: 10000000, // 10MB
+      maxFiles: 30, // keep up to 30 files
+    }),
   ],
 });
 
-
-module.exports ={logger}
+module.exports = { logger };

@@ -1,13 +1,17 @@
 const studentData = require("../models/studentModel");
 const logger = require("../loggers/loggers");
 
+//***************************************/
+//**Controllers** - The controllers handles all the logic behind validating request parameters, 
+//query, Sending Responses with correct codes.
+//***************************************/
 
 const createUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { firstName,lastName, email,phoneNo  } = req.body;
 
   try {
     // Check if all required fields are present
-    if (!name || !email || !password) {
+    if (!firstName || !lastName || !email || !phoneNo) {
       return res
         .status(400)
         .json({ status: "error", message: "Please enter all the fields" });
@@ -15,9 +19,10 @@ const createUser = async (req, res) => {
 
     // Create a new studentData instance
     const result = new studentData({
-      name: name,
-      email: email,
-      password: password,
+      firstName: firstName,
+      lastName: lastName,
+      email:email,
+      phoneNo: phoneNo,
     });
 
     // Save the new user data
@@ -42,9 +47,8 @@ const createUser = async (req, res) => {
   }
 };
 
-
-const GetUser = async (req, res) => {
-  const { name }  = req.body;
+const getUser = async (req, res) => {
+  // const { name }  = req.body;
   try {
 
     let result = await studentData.find();
@@ -52,7 +56,7 @@ const GetUser = async (req, res) => {
     // Respond with success status and user data
      return ({ status: "success", userGetdata: result });
     } else {
-      return ({ message: "error", Data: "No Data Found" });
+      return ({ status: "error", message: "No Data Found" });
     }
   } catch (error) {
     // Log the error and respond with an error status and message
@@ -70,5 +74,72 @@ const GetUser = async (req, res) => {
   }
 };
 
+const updateUser = async (req, res) => {
+  const { index, firstName,lastName, email ,phoneNo } = req.body; //id, name, email
+  try {
+    if(!index || !firstName ||!lastName || !email ||!phoneNo) {
+      return res.status(400).send({ status: "error", message:"Please Enter all the fields"});
+    }
+    const result = await studentData.findOneAndUpdate(
+      { _id: index },
+      {
+        $set: {
+          firstName: firstName,
+          lastName:lastName,
+          email: email,
+          phoneNo:phoneNo
+        }
+      },
+      { new: true }
+    );
+    if (result) {
+      return ({ status: "success", message: "Successfully updated" });
+    } else {
+      return ({ status: "error", user: "Student not found" });
+    }
+  } catch (error) {
+    logger.info(
+      `(Router:) /studentUpdate ,(File:) userController.js, (Error:1)` +
+        " " +
+        `${error} ` +
+        " " +
+        new Date()
+    );  
+    return res.status(500).json({
+      status: "error",
+      message: "Something went wrong, please try again later",
+    });  }
+}
 
-module.exports = { createUser ,GetUser };
+const deleteUser = async (req, res) => {
+  try {
+    const id = req.body.id;
+
+    if(!id){
+      return res.status(404).send({ status: "error", message:"Please Enter id"});
+    }
+    const result = await studentData.findOneAndDelete({ _id: id });
+
+    if (result) {
+     return({status:"success", message: "Successfully Deleted" });
+    } else {
+     return({ status: "error", message: "Student not found" });
+    }
+  } catch (error) {
+    // Log the error and respond with an error status and message
+    logger.info(
+      `(Router:) /studentDelete ,(File:) userController.js, (Error:1)` +
+        " " +
+        `${error} ` +
+        " " +
+        new Date()
+    );
+    return res.status(500).json({
+      status: "error",
+      message: "Something went wrong, please try again later",
+    });
+  }
+};
+
+
+module.exports = { createUser ,getUser ,updateUser , deleteUser};
